@@ -1,8 +1,8 @@
 # Walmart Store Sales Forecasting
 
-End-to-end demand forecasting pipeline built on the [Walmart Recruiting - Store Sales Forecasting](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting) Kaggle dataset. Weekly sales are ingested and staged in PostgreSQL, feature-engineered, and forecast with XGBoost, benchmarked against a naive baseline using the competition's own weighted MAE metric.
+End-to-end demand forecasting pipeline built on the [Walmart Recruiting - Store Sales Forecasting](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting) Kaggle dataset. Weekly sales are ingested and cleaned with pandas, feature-engineered, and forecast with XGBoost, benchmarked against a naive baseline using the competition's own weighted MAE metric.
 
-Personal project, built to sharpen end-to-end forecasting skills spanning data engineering, feature engineering, and model evaluation. Not affiliated with or endorsed by Walmart or Kaggle.
+Personal project, built to sharpen end-to-end forecasting skills spanning data cleaning, feature engineering, and model evaluation. Not affiliated with or endorsed by Walmart or Kaggle.
 
 ## Problem
 
@@ -16,13 +16,15 @@ Evaluation uses **Weighted Mean Absolute Error (WMAE)**, the competition's own m
 Kaggle CSVs (stores, train, features)
         │
         ▼
-  PostgreSQL raw schema      (load_raw.py)
+  Load & clean               (etl/load_raw.py)
+  - read CSVs, basic type checks
         │
         ▼
-  PostgreSQL staging schema  (build_staging.py)
+  Build staging dataset       (etl/build_staging.py)
   - joined on Store/Date
   - typed, deduplicated
   - MarkDown nulls handled explicitly (documented below)
+  - saved as data/staging/staging.parquet
         │
         ▼
   Feature engineering        (models/features.py)
@@ -61,7 +63,6 @@ Data files are gitignored; they are not included in this repo.
 ```bash
 git clone <repo-url>
 cd walmart-demand-forecasting
-docker compose up -d          # starts PostgreSQL
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python etl/load_raw.py
@@ -87,10 +88,11 @@ python models/evaluate.py
 - **Single train/test split, not full walk-forward cross-validation.** With more time, walk-forward validation across multiple time windows would give a more robust estimate of real-world performance.
 - **No per-department model specialization.** A single model is trained across all store/department combinations; separate models per department (or per store type) would likely improve accuracy but add significant complexity.
 - **No hyperparameter tuning at scale** (e.g. no large grid/Bayesian search) given project scope; defaults and light manual tuning only.
+- **Data storage is pandas/parquet, not a database.** For this dataset size a database wasn't needed for performance; parquet is used for staging output as a lightweight, typed, columnar format.
 
 ## Tech stack
 
-Python, pandas, PostgreSQL, Docker, XGBoost, scikit-learn, FastAPI (stretch goal), pytest, GitHub Actions.
+Python, pandas, pyarrow (parquet), XGBoost, scikit-learn, FastAPI (stretch goal), pytest, GitHub Actions.
 
 ## Tests and CI
 
