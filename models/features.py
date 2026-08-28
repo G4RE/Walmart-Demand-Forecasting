@@ -21,9 +21,7 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Trailing 4-week average, computed on already-lagged sales so it never
     # includes the current row's own target value.
-    df["sales_rolling_mean_4"] = (
-        grouped.shift(1).rolling(4).mean().reset_index(level=[0, 1], drop=True)
-    )
+    df["sales_rolling_mean_4"] = grouped.shift(1).rolling(4).mean()
 
     df["week_of_year"] = df["Date"].dt.isocalendar().week.astype(int)
     df["month"] = df["Date"].dt.month
