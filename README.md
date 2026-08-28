@@ -16,15 +16,9 @@ Evaluation uses **Weighted Mean Absolute Error (WMAE)**, the competition's own m
 Kaggle CSVs (stores, train, features)
         │
         ▼
-  Load & clean               (etl/load_raw.py)
-  - read CSVs, basic type checks
-        │
-        ▼
-  Build staging dataset       (etl/build_staging.py)
+  Load & join                (etl/load_data.py)
   - joined on Store/Date
-  - typed, deduplicated
   - MarkDown nulls handled explicitly (documented below)
-  - saved as data/staging/staging.parquet
         │
         ▼
   Feature engineering        (models/features.py)
@@ -49,7 +43,7 @@ Kaggle CSVs (stores, train, features)
 
 ## Dataset
 
-Download from the [Kaggle competition page](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data) (free account required, accept competition rules) and place the CSVs in `data/raw/`:
+Download from the [Kaggle competition page](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data) (free account required, accept competition rules) and place the CSVs in `data/`:
 
 - `stores.csv` - 45 stores, with Type (A/B/C) and Size
 - `train.csv` - weekly sales by Store/Dept/Date, 2010-2012
@@ -65,8 +59,6 @@ git clone <repo-url>
 cd walmart-demand-forecasting
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-python etl/load_raw.py
-python etl/build_staging.py
 python models/train.py
 python models/evaluate.py
 ```
@@ -88,11 +80,11 @@ python models/evaluate.py
 - **Single train/test split, not full walk-forward cross-validation.** With more time, walk-forward validation across multiple time windows would give a more robust estimate of real-world performance.
 - **No per-department model specialization.** A single model is trained across all store/department combinations; separate models per department (or per store type) would likely improve accuracy but add significant complexity.
 - **No hyperparameter tuning at scale** (e.g. no large grid/Bayesian search) given project scope; defaults and light manual tuning only.
-- **Data storage is pandas/parquet, not a database.** For this dataset size a database wasn't needed for performance; parquet is used for staging output as a lightweight, typed, columnar format.
+- **Data storage stays in memory, no intermediate files.** `etl/load_data.py` loads and joins the raw CSVs on every run; for this dataset size that's fast enough that a saved staging file isn't needed.
 
 ## Tech stack
 
-Python, pandas, pyarrow (parquet), XGBoost, scikit-learn, FastAPI (stretch goal), pytest, GitHub Actions.
+Python, pandas, XGBoost, scikit-learn, FastAPI (stretch goal), pytest, GitHub Actions.
 
 ## Tests and CI
 
