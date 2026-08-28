@@ -1,5 +1,5 @@
 # Walmart Store Sales Forecasting
-![CI](https://github.com/G4RE/Walmart-Demand-Forecasting/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/G4RE/Walmart-Demand-Forecasting/actions/workflows/ci.yml/badge.svg)    ![License](https://img.shields.io/github/license/G4RE/Walmart-Demand-Forecasting)    ![Python](https://img.shields.io/badge/python-3.12-blue)    ![Top Language](https://img.shields.io/github/languages/top/G4RE/Walmart-Demand-Forecasting)
 
 End-to-end demand forecasting pipeline built on the [Walmart Recruiting - Store Sales Forecasting](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting) Kaggle dataset. Weekly sales are ingested and cleaned with pandas, feature-engineered, and forecast with XGBoost, benchmarked against a naive baseline using the competition's own weighted MAE metric.
 
