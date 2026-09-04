@@ -60,18 +60,35 @@ git clone <repo-url>
 cd walmart-demand-forecasting
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-python models/train.py
-python models/evaluate.py
+python -m models.train
+python -m models.evaluate
 ```
+
+Run as modules (`python -m models.train`, not `python models/train.py`) so the project root resolves correctly on the import path.
+
+To run the API locally:
+
+```bash
+uvicorn api.main:app --reload
+```
+
+Then open `http://127.0.0.1:8000/docs` for an interactive test UI.
 
 ## Results
 
 | Model | WMAE |
 |---|---|
-| Naive baseline (same week last year) | TBD |
-| XGBoost | TBD |
+| Naive baseline (same week last year) | 1,762.49 |
+| XGBoost | 1,341.74 |
 
-*(Filled in after training runs against the real Kaggle data.)*
+XGBoost improves on the naive baseline by **23.9%**. Feature importance confirms the model leans on the signals you'd expect for retail: same-week-last-year sales, last week's sales, and the trailing 4-week average dominate, with external factors (temperature, fuel price, CPI) contributing very little.
+
+![Feature importance](models/artifacts/feature_importance.png)
+
+Actual-vs-predicted plots for individual store/department combinations show the model tracks the overall trend well, but lags on sharper week-to-week swings:
+
+![Store 1, Dept 1 - Actual vs Predicted](models/artifacts/actual_vs_predicted_store1_dept1.png)
+![Store 20, Dept 7 - Actual vs Predicted](models/artifacts/actual_vs_predicted_store20_dept7.png)
 
 ## Key decisions and honest limitations
 
@@ -88,6 +105,4 @@ Python, pandas, XGBoost, scikit-learn, FastAPI (stretch goal), pytest, GitHub Ac
 
 ## Tests and CI
 
-`tests/test_features.py` covers the feature engineering logic (lag calculations, rolling averages, group leakage) with a small regression test suite built on synthetic data, so it runs without needing the Kaggle CSVs.
-
-`.github/workflows/ci.yml` runs on every push and pull request to `main`: it checks out the repo, sets up Python 3.12 with pip caching, installs `requirements.txt`, and runs `pytest -v`. Since the tests don't touch `data/`, CI passes without the (gitignored) Kaggle dataset present.
+`tests/test_features.py` covers the feature engineering logic (lag calculations, rolling averages, holiday flagging) with a small regression test suite. GitHub Actions runs these on every push (`.github/workflows/ci.yml`).
