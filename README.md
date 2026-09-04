@@ -81,7 +81,19 @@ Then open `http://127.0.0.1:8000/docs` for an interactive test UI.
 | Naive baseline (same week last year) | 1,762.49 |
 | XGBoost | 1,341.74 |
 
-XGBoost improves on the naive baseline by **23.9%**. Feature importance confirms the model leans on the signals you'd expect for retail: same-week-last-year sales, last week's sales, and the trailing 4-week average dominate, with external factors (temperature, fuel price, CPI) contributing very little.
+XGBoost improves on the naive baseline by **23.9%**. In dollar terms, WMAE isn't scale-independent (a $1,300 miss means very different things for a $2,000/week department vs a $60,000/week one), so error is also reported as **WAPE** (error as a % of total sales), which is comparable across departments of different sizes:
+
+| Sales volume tier | Avg weekly sales | WAPE |
+|---|---|---|
+| Low volume | ~$1,288 | 22.9% |
+| Mid volume | ~$8,251 | 10.3% |
+| High volume | ~$38,824 | 7.2% |
+| **Overall** | — | **8.2%** |
+
+The model is noticeably less accurate on low-volume departments, where sparse, noisier sales data makes patterns harder to learn, and most accurate on high-volume departments. This is a genuine limitation worth being upfront about, not something the overall WMAE/WAPE numbers alone would reveal.
+
+Feature importance confirms the model leans on the signals you'd expect for retail: same-week-last-year sales, last week's sales, and the trailing 4-week average dominate, with external factors (temperature, fuel price, CPI) contributing very little.
+
 
 ![Feature importance](models/artifacts/feature_importance.png)
 
